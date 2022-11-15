@@ -36,6 +36,13 @@ const signinSchema = Joi.object({
   password: Joi.string().required(),
 });
 
+const extractSchema = Joi.object({
+  date: Joi.string().required(),
+  event: Joi.string().required(),
+  price:Joi.number().required(),
+  type: Joi.string().required().valid("positive", "negative"),
+});
+
 app.post("/sign-up", async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -83,7 +90,9 @@ app.post("/sign-in", async (req, res) => {
     const user = await usersCollection.findOne({ email });
 
     if (user && bcrypt.compareSync(password, user.password)) {
-      const isThereToken = await sessionsCollection.findOne({ userId: user._id });
+      const isThereToken = await sessionsCollection.findOne({
+        userId: user._id,
+      });
       if (isThereToken) {
         return res.status(409).send({ message: "Token já cadastrado" });
       } else {
@@ -99,5 +108,15 @@ app.post("/sign-in", async (req, res) => {
   }
 });
 
+app.post("/extracts", (req, res) => {
+  const extract = req.body;
+  console.log(extract);
+  const { error } = extractSchema.validate(extract);
+
+  if (error) {
+    const errorMessages = error.details.map((detail) => detail.message);
+    return res.status(422).send(errorMessages);
+  }
+});
 
 app.listen(5000);
