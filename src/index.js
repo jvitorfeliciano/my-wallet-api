@@ -79,7 +79,10 @@ app.post("/sign-up", async (req, res) => {
 app.post("/sign-in", async (req, res) => {
   const { email, password } = req.body;
 
-  const { error } = signinSchema.validate({ email, password }, {abortEarly:false});
+  const { error } = signinSchema.validate(
+    { email, password },
+    { abortEarly: false }
+  );
 
   if (error) {
     const errorMessages = error.details.map((detail) => detail.message);
@@ -117,7 +120,7 @@ app.post("/extracts", async (req, res) => {
     return res.status(401).send({ message: "Acesso negado" });
   }
 
-  const { error } = extractSchema.validate(extract, {abortEarly:false});
+  const { error } = extractSchema.validate(extract, { abortEarly: false });
 
   if (error) {
     const errorMessages = error.details.map((detail) => detail.message);
@@ -125,13 +128,11 @@ app.post("/extracts", async (req, res) => {
   }
 
   try {
-    const user = await sessionsCollection.findOne({ token });
     const formattedExtract = {
       date: dayjs().format("DD/MM"),
-      key: user.userId,
+      key: token,
       ...extract,
     };
-   console.log(user, formattedExtract)
     await extractsCollection.insertOne(formattedExtract);
     return res.status(201).send({ message: "Extrato cadastrado com sucesso" });
   } catch (err) {
@@ -139,4 +140,19 @@ app.post("/extracts", async (req, res) => {
   }
 });
 
+app.get("/extracts", async (req, res) => {
+  const { authorization } = req.headers;
+  const token = authorization?.replace("Bearer ", "");
+
+  if (!token) {
+    return res.status(401).send({ message: "Acesso negado" });
+  }
+  try{
+     const userExtracts = await extractsCollection.find({key: token}).toArray();
+     console.log(userExtracts)
+     return res.send(userExtracts);
+  }catch (err) {
+    return res.status(500).send({ error: "Erro do servidor" });
+  }
+});
 app.listen(5000);
