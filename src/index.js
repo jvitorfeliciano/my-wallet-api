@@ -31,9 +31,9 @@ const signupSchema = Joi.object({
 });
 
 const signinSchema = Joi.object({
-    email: Joi.string().email().required(),
-    password: Joi.string().required()
-})
+  email: Joi.string().email().required(),
+  password: Joi.string().required(),
+});
 
 app.post("/sign-up", async (req, res) => {
   const { name, email, password } = req.body;
@@ -68,16 +68,26 @@ app.post("/sign-up", async (req, res) => {
   }
 });
 
+app.post("/sign-in", async (req, res) => {
+  const { email, password } = req.body;
 
-app.post("/sign-in", async (req, res)=>{
-   const {email, password} = req.body;
-    
-   const {error} = signinSchema.validate({email, password});
+  const { error } = signinSchema.validate({ email, password });
 
-   if(error){
+  if (error) {
     const errorMessages = error.details.map((detail) => detail.message);
     return res.status(422).send(errorMessages);
-   }
-  
-})
+  }
+
+  try {
+    const user = await usersCollection.findOne({ email });
+    console.log(user)
+    if (user && bcrypt.compareSync(password, user.password)) {
+      console.log("As senhas correspondem");
+    }else{
+        return res.status(401).send({ message: "Email ou senha incorretos" })
+    }
+  } catch (err) {
+    return res.status(500).send({ error: "Erro do servidor" });
+  }
+});
 app.listen(5000);
