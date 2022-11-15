@@ -49,10 +49,12 @@ app.post("/sign-up", async (req, res) => {
     }
 
     const encryptedPassword = bcrypt.hashSync(password,10);
-    console.log(password, encryptedPassword)
+    await usersCollection.insertOne({name, email, password:encryptedPassword});
+     
+    return res.status(201).send({message:"Usuário cadastrado om sucesso"});
     
   }catch(err){
-     return res.status(500).send({error:"Server error"});
+     return res.status(500).send({error:"Erro do servidor"});
   }
  
  
