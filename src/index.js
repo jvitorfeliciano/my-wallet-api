@@ -3,7 +3,7 @@ import cors from "cors";
 import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
 import Joi from "joi";
-import bcrypt from "bcrypt";
+import bcrypt, { compareSync } from "bcrypt";
 
 dotenv.config();
 const app = express();
@@ -30,6 +30,11 @@ const signupSchema = Joi.object({
   password: Joi.string().required(),
 });
 
+const signinSchema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().required()
+})
+
 app.post("/sign-up", async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -40,7 +45,6 @@ app.post("/sign-up", async (req, res) => {
 
   if (error) {
     const errorMessages = error.details.map((detail) => detail.message);
-    console.log(errorMessages);
     return res.status(422).send(errorMessages);
   }
 
@@ -64,4 +68,16 @@ app.post("/sign-up", async (req, res) => {
   }
 });
 
+
+app.post("/sign-in", async (req, res)=>{
+   const {email, password} = req.body;
+    
+   const {error} = signinSchema.validate({email, password});
+
+   if(error){
+    const errorMessages = error.details.map((detail) => detail.message);
+    return res.status(422).send(errorMessages);
+   }
+  
+})
 app.listen(5000);
