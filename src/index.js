@@ -109,7 +109,7 @@ app.post("/sign-in", async (req, res) => {
   }
 });
 
-app.post("/extracts", (req, res) => {
+app.post("/extracts", async (req, res) => {
   const extract = req.body;
   console.log(extract);
 
@@ -123,6 +123,13 @@ app.post("/extracts", (req, res) => {
   if (error) {
     const errorMessages = error.details.map((detail) => detail.message);
     return res.status(422).send(errorMessages);
+  }
+
+  try {
+    await extractsCollection.insertOne(formattedExtract);
+    return res.status(201).send({ message: "Extrato cadastrado com sucesso" });
+  } catch (err) {
+    return res.status(500).send({ error: "Erro do servidor" });
   }
 });
 
