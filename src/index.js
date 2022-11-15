@@ -40,7 +40,18 @@ app.post("/sign-up", async (req, res) => {
     console.log(errorMessages)
     return res.status(422).send(errorMessages);
   }
+   
+  try{
+    const users  = await usersCollection.findOne({email});
 
+    if(users){
+        return res.status(409).send({message:"Usuário já cadastrado"});
+    }
+    console.log(users)
+  }catch(err){
+     return res.status(500).send({error:"Server error"});
+  }
+ 
  
 });
 
