@@ -4,7 +4,7 @@ import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
 import Joi from "joi";
 import bcrypt from "bcrypt";
-import {v4 as uuidv4}  from "uuid";
+import { v4 as uuidv4 } from "uuid";
 
 dotenv.config();
 const app = express();
@@ -81,11 +81,18 @@ app.post("/sign-in", async (req, res) => {
 
   try {
     const user = await usersCollection.findOne({ email });
- 
+
     if (user && bcrypt.compareSync(password, user.password)) {
-       const token = uuidv4();
-    }else{
-        return res.status(401).send({ message: "Email ou senha incorretos" })
+      const isThereToken = await sessionsCollection.findOne({ userId: user._id });
+      if (isThereToken) {
+        return res.status(409).send({ message: "Token já cadastrado" });
+      } else {
+        const token = uuidv4();
+        await sessionsCollection.insertOne({ token, userId: user._id });
+        return res.status(200).send({ token: token });
+      }
+    } else {
+      return res.status(401).send({ message: "Email ou senha incorretos" });
     }
   } catch (err) {
     return res.status(500).send({ error: "Erro do servidor" });
