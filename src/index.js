@@ -3,7 +3,8 @@ import cors from "cors";
 import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
 import Joi from "joi";
-import bcrypt, { compareSync } from "bcrypt";
+import bcrypt from "bcrypt";
+import {v4 as uuidv4}  from "uuid";
 
 dotenv.config();
 const app = express();
@@ -80,9 +81,9 @@ app.post("/sign-in", async (req, res) => {
 
   try {
     const user = await usersCollection.findOne({ email });
-    console.log(user)
+ 
     if (user && bcrypt.compareSync(password, user.password)) {
-      console.log("As senhas correspondem");
+       const token = uuidv4();
     }else{
         return res.status(401).send({ message: "Email ou senha incorretos" })
     }
