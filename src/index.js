@@ -89,7 +89,7 @@ app.post("/sign-in", async (req, res) => {
       } else {
         const token = uuidv4();
         await sessionsCollection.insertOne({ token, userId: user._id });
-        return res.status(200).send({ token: token });
+        return res.status(200).send({ token: token, name: user.name });
       }
     } else {
       return res.status(401).send({ message: "Email ou senha incorretos" });
@@ -98,4 +98,6 @@ app.post("/sign-in", async (req, res) => {
     return res.status(500).send({ error: "Erro do servidor" });
   }
 });
+
+
 app.listen(5000);
