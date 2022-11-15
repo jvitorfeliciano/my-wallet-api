@@ -47,7 +47,10 @@ app.post("/sign-up", async (req, res) => {
     if(users){
         return res.status(409).send({message:"Usuário já cadastrado"});
     }
-    console.log(users)
+
+    const encryptedPassword = bcrypt.hashSync(password,10);
+    console.log(password, encryptedPassword)
+    
   }catch(err){
      return res.status(500).send({error:"Server error"});
   }
