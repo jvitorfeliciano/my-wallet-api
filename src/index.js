@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { MongoClient } from "mongodb";
+import { CancellationToken, MongoClient } from "mongodb";
 import dotenv from "dotenv";
 import Joi from "joi";
 import bcrypt from "bcrypt";
@@ -111,13 +111,18 @@ app.post("/sign-in", async (req, res) => {
 
 app.post("/extracts", async (req, res) => {
   const extract = req.body;
-  console.log(extract);
+  const {authorization} = req.headers;
+  const token = authorization?.replace("Bearer ","")
+
+  if(!token){
+    return res.status(401).send({message:"Acesso negado"});
+  }
 
   const formattedExtract = {
     date: dayjs().format("DD/MM"),
     ...extract,
   };
-  console.log(formattedExtract);
+
   const { error } = extractSchema.validate(formattedExtract);
 
   if (error) {
@@ -134,3 +139,5 @@ app.post("/extracts", async (req, res) => {
 });
 
 app.listen(5000);
+
+
