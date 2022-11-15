@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import Joi from "joi";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
+import dayjs from "dayjs";
 
 dotenv.config();
 const app = express();
@@ -39,7 +40,7 @@ const signinSchema = Joi.object({
 const extractSchema = Joi.object({
   date: Joi.string().required(),
   event: Joi.string().required(),
-  price:Joi.number().required(),
+  price: Joi.number().required(),
   type: Joi.string().required().valid("positive", "negative"),
 });
 
@@ -111,7 +112,13 @@ app.post("/sign-in", async (req, res) => {
 app.post("/extracts", (req, res) => {
   const extract = req.body;
   console.log(extract);
-  const { error } = extractSchema.validate(extract);
+
+  const formattedExtract = {
+    date: dayjs().format("DD/MM"),
+    ...extract,
+  };
+  console.log(formattedExtract);
+  const { error } = extractSchema.validate(formattedExtract);
 
   if (error) {
     const errorMessages = error.details.map((detail) => detail.message);
