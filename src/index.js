@@ -38,7 +38,6 @@ const signinSchema = Joi.object({
 });
 
 const extractSchema = Joi.object({
-  date: Joi.string().required(),
   event: Joi.string().required(),
   price: Joi.number().required(),
   type: Joi.string().required().valid("positive", "negative"),
@@ -80,7 +79,7 @@ app.post("/sign-up", async (req, res) => {
 app.post("/sign-in", async (req, res) => {
   const { email, password } = req.body;
 
-  const { error } = signinSchema.validate({ email, password });
+  const { error } = signinSchema.validate({ email, password }, {abortEarly:false});
 
   if (error) {
     const errorMessages = error.details.map((detail) => detail.message);
@@ -111,19 +110,14 @@ app.post("/sign-in", async (req, res) => {
 
 app.post("/extracts", async (req, res) => {
   const extract = req.body;
-  const {authorization} = req.headers;
-  const token = authorization?.replace("Bearer ","")
+  const { authorization } = req.headers;
+  const token = authorization?.replace("Bearer ", "");
 
-  if(!token){
-    return res.status(401).send({message:"Acesso negado"});
+  if (!token) {
+    return res.status(401).send({ message: "Acesso negado" });
   }
 
-  const formattedExtract = {
-    date: dayjs().format("DD/MM"),
-    ...extract,
-  };
-
-  const { error } = extractSchema.validate(formattedExtract);
+  const { error } = extractSchema.validate(extract, {abortEarly:false});
 
   if (error) {
     const errorMessages = error.details.map((detail) => detail.message);
@@ -131,6 +125,13 @@ app.post("/extracts", async (req, res) => {
   }
 
   try {
+    const user = await sessionsCollection.findOne({ token });
+    const formattedExtract = {
+      date: dayjs().format("DD/MM"),
+      key: user.userId,
+      ...extract,
+    };
+   console.log(user, formattedExtract)
     await extractsCollection.insertOne(formattedExtract);
     return res.status(201).send({ message: "Extrato cadastrado com sucesso" });
   } catch (err) {
@@ -139,5 +140,3 @@ app.post("/extracts", async (req, res) => {
 });
 
 app.listen(5000);
-
-
