@@ -97,12 +97,11 @@ app.post("/sign-in", async (req, res) => {
         userId: user._id,
       });
       if (isThereToken) {
-        return res.status(409).send({ message: "Token já cadastrado" });
-      } else {
-        const token = uuidv4();
-        await sessionsCollection.insertOne({ token, userId: user._id });
-        return res.status(200).send({ token: token, name: user.name });
+        await sessionsCollection.deleteOne({ userId: user._id });
       }
+      const token = uuidv4();
+      await sessionsCollection.insertOne({ token, userId: user._id });
+      return res.status(200).send({ token: token, name: user.name });
     } else {
       return res.status(401).send({ message: "Email ou senha incorretos" });
     }
@@ -111,7 +110,7 @@ app.post("/sign-in", async (req, res) => {
   }
 });
 
-app.post("/extracts", async (req, res) => {
+app.post("/extract", async (req, res) => {
   const extract = req.body;
   const { authorization } = req.headers;
   const token = authorization?.replace("Bearer ", "");
@@ -140,19 +139,22 @@ app.post("/extracts", async (req, res) => {
   }
 });
 
-app.get("/extracts", async (req, res) => {
+app.get("/extract", async (req, res) => {
   const { authorization } = req.headers;
   const token = authorization?.replace("Bearer ", "");
 
   if (!token) {
     return res.status(401).send({ message: "Acesso negado" });
   }
-  try{
-     const userExtracts = await extractsCollection.find({key: token}).toArray();
-     console.log(userExtracts)
-     return res.send(userExtracts);
-  }catch (err) {
+  try {
+    const userExtracts = await extractsCollection
+      .find({ key: token })
+      .toArray();
+    console.log(userExtracts);
+    return res.send(userExtracts);
+  } catch (err) {
     return res.status(500).send({ error: "Erro do servidor" });
   }
 });
+
 app.listen(5000);
