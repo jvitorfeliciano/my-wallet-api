@@ -1,5 +1,5 @@
-import { sessionsCollection, extractsCollection } from "../index.js";
 import dayjs from "dayjs";
+import { extractsCollection, sessionsCollection } from "../database/db.js";
 
 export async function postExtract(req, res) {
   const extract = req.body;

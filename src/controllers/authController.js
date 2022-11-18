@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
-import { usersCollection, sessionsCollection } from "../index.js";
+import { sessionsCollection, usersCollection } from "../database/db.js";
 
 export async function postSignUp(req, res) {
   const { name, email, password } = req.body;
