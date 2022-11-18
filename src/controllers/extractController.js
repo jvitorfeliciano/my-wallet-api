@@ -1,21 +1,10 @@
 import { sessionsCollection, extractsCollection } from "../index.js";
-import { extractSchema } from "../schemas/schemas.js";
 import dayjs from "dayjs";
 
-export async function postExtract(req, res){
+export async function postExtract(req, res) {
   const extract = req.body;
   const { authorization } = req.headers;
   const token = authorization?.replace("Bearer ", "");
-
-  if (!token) {
-    return res.status(401).send({ message: "Acesso negado" });
-  }
-
-  const { error } = extractSchema.validate(extract, { abortEarly: false });
-
-  if (error) {
-    return res.status(422).send({ message: "Preencha os campos corretamente" });
-  }
 
   try {
     const user = await sessionsCollection.findOne({ token });
@@ -41,10 +30,6 @@ export async function getExtract(req, res) {
 
   const token = authorization?.replace("Bearer ", "");
 
-  if (!token) {
-    console.log(token);
-    return res.status(401).send({ message: "Acesso negado" });
-  }
   try {
     const user = await sessionsCollection.findOne({ token });
 
