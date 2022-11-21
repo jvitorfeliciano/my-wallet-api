@@ -1,24 +1,19 @@
+import { ObjectID } from "bson";
 import dayjs from "dayjs";
-import { extractsCollection, sessionsCollection } from "../database/db.js";
+import { extractsCollection } from "../database/db.js";
 
 export async function postExtract(req, res) {
   const extract = req.body;
-  const { authorization } = req.headers;
-  const token = authorization?.replace("Bearer ", "");
+  const userId = req.userId;
 
   try {
-    const user = await sessionsCollection.findOne({ token });
-
-    if (!user) {
-      return res.status(404).send({ message: "Usuário não encontrado" });
-    }
-
     const formattedExtract = {
       date: dayjs().format("DD/MM"),
-      key: user.userId,
+      key: userId,
       ...extract,
     };
     await extractsCollection.insertOne(formattedExtract);
+
     return res.status(201).send({ message: "Extrato cadastrado com sucesso" });
   } catch (err) {
     return res.status(500).send({ error: "Erro do servidor" });
@@ -26,24 +21,25 @@ export async function postExtract(req, res) {
 }
 
 export async function getExtract(req, res) {
-  const { authorization } = req.headers;
-
-  const token = authorization?.replace("Bearer ", "");
+  const userId = req.userId;
 
   try {
-    const user = await sessionsCollection.findOne({ token });
-
-    if (!user) {
-      return res.status(404).send({ message: "Usuário não encontrado" });
-    }
     const userExtracts = await extractsCollection
-      .find({ key: user.userId })
+      .find({ key: userId })
       .toArray();
-
-    delete userExtracts.key;
-
     return res.send(userExtracts);
   } catch (err) {
     return res.status(500).send({ error: "Erro do servidor" });
   }
 }
+
+export  async function deleteExtract(req, res) {
+  const id = req.params.extractId;
+  try {
+    await extractsCollection.deleteOne({ _id: ObjectID(id) });
+    return res.status(200).send({ message: "Extrato deletado com sucesso" });
+  } catch (err) {
+    return res.status(500).send({ error: "Erro do servidor" });
+  }
+}
+
