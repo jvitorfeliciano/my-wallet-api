@@ -5,3 +5,6 @@ export const extractSchema = Joi.object({
     price: Joi.number().required(),
     type: Joi.string().required().valid("positive", "negative"),
   });
+
+
+  

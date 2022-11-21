@@ -21,7 +21,7 @@ export async function postSignUp(req, res) {
 
     return res.status(201).send({ message: "Usuário cadastrado om sucesso" });
   } catch (err) {
-    return res.status(500).send({ error: "Erro do servidor" });
+    return res.status(500).send({ message: "Erro do servidor" });
   }
 }
 
@@ -36,8 +36,7 @@ export async function postSignIn(req, res) {
         userId: user._id,
       });
       if (isThereToken) {
-        await sessionsCollection.deleteOne({ userId: user._id });
-        console.log("ele tinha token");
+        return res.send({ message: "Você já está logado em um aparelho" });
       }
 
       const token = uuidv4();
@@ -47,6 +46,16 @@ export async function postSignIn(req, res) {
       return res.status(401).send({ message: "Email ou senha incorretos" });
     }
   } catch (err) {
-    return res.status(500).send({ error: "Erro do servidor" });
+    return res.status(500).send({ message: "Erro do servidor" });
+  }
+}
+
+export default async function deleteSession(req, res) {
+  const userId = req.userId;
+  try {
+    await sessionsCollection.deleteOne({ userId });
+    return res.status(200).send({ message: "Sessão deletada com sucesso" });
+  } catch (err) {
+    return res.status(500).send({ message: "Erro do servidor" });
   }
 }

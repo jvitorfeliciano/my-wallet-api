@@ -3,7 +3,6 @@ import { sessionsCollection, usersCollection } from "../database/db.js";
 export default async function tokenValidation(req, res, next) {
   const { authorization } = req.headers;
   const token = authorization?.replace("Bearer ", "");
-
   if (!token) {
     return res.status(401).send({ message: "Acesso negado" });
   }
@@ -20,7 +19,8 @@ export default async function tokenValidation(req, res, next) {
     }
     req.userId = user._id;
   } catch (err) {
-    return res.status(500).send({ error: "Erro do servidor" });
+    return res.status(500).send({ message: "Erro do servidor" });
   }
+
   next();
 }

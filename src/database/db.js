@@ -15,3 +15,5 @@ const db = mongoClient.db("my-wallet");
 export const usersCollection = db.collection("users");
 export const extractsCollection = db.collection("extracts");
 export const sessionsCollection = db.collection("sessions");
+
+
