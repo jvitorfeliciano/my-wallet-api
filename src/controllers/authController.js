@@ -36,7 +36,7 @@ export async function postSignIn(req, res) {
         userId: user._id,
       });
       if (isThereToken) {
-        return res.send({ message: "Você já está logado em um aparelho" });
+        return res.status(409).send({ message: "Você já está logado em um aparelho" });
       }
 
       const token = uuidv4();
